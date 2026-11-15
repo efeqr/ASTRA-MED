@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASTRA-MED | NASA Space Apps 2026 Astronot Öz-Ölçüm ve Sağlık Takip Sistemi</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ÜST GÖREV BAŞLIĞI -->
+  <header class="top-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <div class="brand-logo-svg" id="header-logo-svg"></div>
+        <div class="brand-titles">
+          <div class="brand-title-row">
+            <h1>ASTRA-MED</h1>
+            <span class="nasa-tag">NASA SPACE APPS 2026</span>
+            <span id="header-readiness-badge" class="status-pill status-normal">DURUM: NORMAL</span>
+          </div>
+          <p>Derin Uzayda Astronot Günlük Öz-Ölçüm, Veri Girişi ve Otonom Karar Destek Sistemi</p>
+        </div>
+      </div>
+
+      <div class="header-telemetry-strip">
+        <div class="telemetry-pill">
+          <span class="pill-label">Yeni Ölçüm Günü</span>
+          <span class="pill-value" id="header-mission-day">Görev Günü 6</span>
+        </div>
+        <div class="telemetry-pill">
+          <span class="pill-label">Dünya İletişim Gecikmesi</span>
+          <span class="pill-value" id="header-comm-delay">14.2 dk</span>
+        </div>
+        <div class="telemetry-pill">
+          <span class="pill-label">Kaydedilen Gün Sayısı</span>
+          <span class="pill-value" id="header-distance">5 Gün Kayıtlı</span>
+        </div>
+        <div class="telemetry-pill">
+          <span class="pill-label">Sağlık Puanı</span>
+          <span class="pill-value" id="header-health-score">%100</span>
+        </div>
+        <button class="btn btn-primary-sim" id="btn-export-json" title="Ölçüm Kayıtlarını JSON Olarak İndir">
+          Kayıt Defterini İndir (JSON)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- ÜST KONTROL ÇUBUĞU: ASTRONOT SEÇİMİ, KİŞİSEL BAZ DEĞERLERİ VE YENİ GÜN KAYIT KONTROLÜ -->
+    <section class="mission-control-bar" aria-label="Astronot ve Baz Değerleri Çubuğu">
+      <!-- 1. Astronot Seçimi -->
+      <div class="crew-selector-box">
+        <div class="crew-avatar-svg" id="crew-avatar"></div>
+        <div class="crew-details">
+          <label for="crew-select">Aktif Astronot Profili</label>
+          <select id="crew-select" class="select-input">
+            <option value="cdr-kaya">Elif Kaya (Görev Komutanı)</option>
+            <option value="plt-vance">Marcus Vance (Uzay Aracı Pilotu)</option>
+            <option value="ms-sato">Dr. Kenji Sato (Biyobilim Uzmanı)</option>
+          </select>
+          <div class="crew-sub-meta" id="crew-role">Görev Komutanı • Kan Grubu: A Rh+ • Yaş: 38</div>
+          <div id="crew-name" style="display:none;">Elif Kaya</div>
+        </div>
+      </div>
+
+      <!-- 2. Seçili Astronotun Kişisel Baz Değerleri (Uçuş Öncesi Normali) -->
+      <div class="baseline-overview-box">
+        <div class="control-label">SEÇİLİ ASTRONOTUN KİŞİSEL BAZ DEĞERLERİ (UÇUŞ ÖNCESİ NORMALİ)</div>
+        <div class="baseline-mini-grid" id="top-baseline-strip"></div>
+      </div>
+
+      <!-- 3. Yeni Gün Kaydı ve Hızlı Örnek Değer Doldurma -->
+      <div class="anomaly-simulator-box">
+        <label for="anomaly-scenario-select" class="control-label">
+          Hızlı Örnek Ölçüm Doldur (Jüri Sunumu Kolaylığı)
+        </label>
+        <select id="anomaly-scenario-select" class="select-input">
+          <option value="nominal">Normal Günlük Ölçüm Değerleri</option>
+          <option value="sans_fluid_shift">Örnek 1: Yüksek Tansiyon ve Göz Basıncı (148/94 mmHg)</option>
+          <option value="space_fever_cytokine">Örnek 2: Yüksek Ateş ve Hızlı Nabız (38.3°C, 108 Atım)</option>
+          <option value="circadian_collapse">Örnek 3: Yetersiz Uyku ve Düşük Odak (3.9 Saat, 3.1 Puan)</option>
+          <option value="metabolic_renal_stress">Örnek 4: Yüksek Açlık Kan Şekeri (152 mg/dL)</option>
+        </select>
+        <div class="anomaly-btn-row">
+          <button class="btn btn-primary-sim" id="btn-focus-entry-tab">Yeni Gün Verisi Gir</button>
+          <button class="btn" id="btn-reset-nominal">Baz Değerlere Sıfırla</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÜST SEKME MENÜSÜ (5 BÖLÜM) -->
+    <nav class="main-tabs-nav" aria-label="Uygulama Bölümleri">
+      <button class="main-tab-btn active" data-tab-target="tab-guides">
+        <span class="tab-icon" id="nav-icon-guide"></span>
+        <span>1. Ölçüm Rehberi ve Veri Girişi</span>
+      </button>
+      <button class="main-tab-btn" data-tab-target="tab-overview">
+        <span class="tab-icon" id="nav-icon-dashboard"></span>
+        <span>2. Sağlık Durumu ve Ne Yapılmalı?</span>
+        <span class="tab-alert-badge" id="tab-badge-alerts" style="display:none;">0</span>
+      </button>
+      <button class="main-tab-btn" data-tab-target="tab-bodymap">
+        <span class="tab-icon" id="nav-icon-body"></span>
+        <span>3. İnsan Vücudu Haritası</span>
+      </button>
+      <button class="main-tab-btn" data-tab-target="tab-charts">
+        <span class="tab-icon" id="nav-icon-charts"></span>
+        <span>4. Kaydedilen Günler ve NASA Verileri</span>
+      </button>
+      <button class="main-tab-btn" data-tab-target="tab-gamification">
+        <span class="tab-icon" id="nav-icon-tasks"></span>
+        <span>5. Günlük Görevler ve Su Takibi</span>
+      </button>
+    </nav>
+
+    <!-- =======================================================================
+         SEKME 1: ASTRONOT ÖZ-ÖLÇÜM REHBERİ VE YENİ GÜN VERİ GİRİŞ EKRANI
+         ======================================================================= -->
+    <section id="tab-guides" class="tab-pane active">
+      <div class="panel-card" style="margin-bottom: 18px;">
+        <div class="section-header" style="margin-bottom: 4px;">
+          <div class="section-title-group">
+            <h2 id="entry-screen-title">Yeni Gün Veri Girişi (Görev Günü 6) ve Öz-Ölçüm Rehberi</h2>
+            <p>
+              Her kartta sol kutuda <strong>kendi kişisel baz değerinizi (uçuş öncesi normalinizi)</strong> görebilir, sağ kutuya ise ölçüm rehberini uygulayarak <strong>bugünkü yeni ölçümünüzü</strong> girebilirsiniz.
+            </p>
+          </div>
+          <div class="entry-quick-actions">
+            <button type="button" class="btn btn-apply-countermeasure" id="btn-save-all-measurements">
+              Bugünün Ölçümlerini Kaydet ve Yeni Güne Geç (+50 Puan)
+            </button>
+          </div>
+        </div>
+
+        <!-- 6 Rehberli Ölçüm + Kişisel Baz Değerli Veri Giriş Kartı -->
+        <div class="guide-entry-grid" id="guide-cards-grid"></div>
+
+        <!-- Alt Kayıt Çubuğu ve Anlık Karar Motoru Özeti -->
+        <div class="entry-bottom-bar">
+          <div class="entry-live-summary" id="entry-live-summary"></div>
+          <div class="entry-submit-group">
+            <button type="button" class="btn" id="btn-fill-normal-preset">Normal Baz Değerleri Doldur</button>
+            <button type="button" class="btn btn-danger-sim" id="btn-fill-risk-preset">Örnek Riskli Ölçüm Doldur</button>
+            <button type="button" class="btn btn-apply-countermeasure" id="btn-save-all-measurements-bottom">
+              Bugünün Ölçümlerini Kaydet ve Analiz Raporunu Aç →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kaydedilen Astronot Ölçüm Geçmişi Tablosu (Logbook) -->
+      <div class="panel-card">
+        <div class="section-header" style="margin-bottom: 0;">
+          <div class="section-title-group">
+            <h2>Kaydedilen Günlük Ölçümler (Astronot Sağlık Kayıt Defteri)</h2>
+            <p>Her yeni gün kaydettiğiniz ölçümler buraya eklenir ve 4. sekmedeki trend grafiğini oluşturur.</p>
+          </div>
+          <span class="status-pill status-normal" id="logbook-count-badge">5 Gün Kayıtlı</span>
+        </div>
+        <div class="logbook-table-wrap">
+          <table class="logbook-table">
+            <thead>
+              <tr>
+                <th>Kayıt Günü / Saat</th>
+                <th>Astronot</th>
+                <th>Tansiyon (Baz)</th>
+                <th>Nabız (Baz)</th>
+                <th>Kan Şekeri (Baz)</th>
+                <th>Sıcaklık (Baz)</th>
+                <th>Uyku (Baz)</th>
+                <th>Ruh Hali (Baz)</th>
+                <th>Değerlendirme</th>
+                <th>İncele</th>
+              </tr>
+            </thead>
+            <tbody id="measurement-log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SEKME 2: SAĞLIK DURUMU, 6 TEMEL METRİK VE KARAR MOTORU ("NE YAPILMALI?")
+         ======================================================================= -->
+    <section id="tab-overview" class="tab-pane">
+      <div class="panel-card" style="margin-bottom: 20px;">
+        <div class="section-header" style="margin-bottom: 0;">
+          <div class="section-title-group">
+            <h2>Otonom Karar Motoru ve "NE YAPILMALI?" Müdahale Protokolü</h2>
+            <p>
+              Astronotun girdiği son ölçümleri kişisel uçuş öncesi baz değerleriyle karşılaştırır; bozulan değerler için uygulanacak karşı önlemleri adım adım sıralar.
+            </p>
+          </div>
+          <span id="decision-alert-count" class="status-pill status-normal">0 Aktif Uyarı</span>
+        </div>
+
+        <div id="syndrome-banner-box" style="display: none;"></div>
+        <div class="decision-alerts-container" id="decision-alerts-container"></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2>Son Girilen 6 Temel Sağlık Ölçümü ve Kişisel Baz Çizgisi Karşılaştırması</h2>
+          <p>
+            Her kutu astronotun girdiği ölçümü kendi uçuş öncesi normal değerine (Baz Çizgisi) göre
+            <strong>Normal (Yeşil)</strong>, <strong>Dikkat (Sarı)</strong> veya <strong>Kritik (Kırmızı)</strong> olarak gösterir.
+          </p>
+        </div>
+      </div>
+      <div class="metrics-grid" id="metrics-grid"></div>
+    </section>
+
+    <!-- =======================================================================
+         SEKME 3: TIKLANABİLİR İNSAN VÜCUDU HARİTASI
+         ======================================================================= -->
+    <section id="tab-bodymap" class="tab-pane">
+      <div class="panel-card">
+        <div class="section-header" style="margin-bottom: 4px;">
+          <div class="section-title-group">
+            <h2>Tıklanabilir İnsan Vücudu Haritası</h2>
+            <p>
+              Girilen ölçümlere göre vücut bölgelerinin anlık durumunu, uygulanması gereken karşı önlem protokolünü ve uzay kaynaklı riskleri görüntüleyin.
+            </p>
+          </div>
+        </div>
+
+        <div class="body-map-workspace-large">
+          <div class="body-svg-stage">
+            <svg class="human-body-svg" viewBox="0 0 220 420" xmlns="http://www.w3.org/2000/svg">
+              <line x1="15" y1="60" x2="205" y2="60" stroke="rgba(162,171,184,0.12)" stroke-dasharray="3,3" />
+              <line x1="15" y1="140" x2="205" y2="140" stroke="rgba(162,171,184,0.12)" stroke-dasharray="3,3" />
+              <line x1="15" y1="220" x2="205" y2="220" stroke="rgba(162,171,184,0.12)" stroke-dasharray="3,3" />
+              <line x1="15" y1="310" x2="205" y2="310" stroke="rgba(162,171,184,0.12)" stroke-dasharray="3,3" />
+
+              <!-- İnsan Vücudu Silüeti -->
+              <path
+                class="body-silhouette"
+                d="M110,16
+                   C127,16 138,28 138,46
+                   C138,61 129,73 122,78
+                   L124,88
+                   L162,96
+                   C173,99 180,108 182,122
+                   L188,205
+                   C189,213 182,218 175,216
+                   L168,140
+                   L154,140
+                   L156,232
+                   L149,382
+                   C148,393 134,395 131,384
+                   L116,258
+                   L104,258
+                   L89,384
+                   C86,395 72,393 71,382
+                   L64,232
+                   L66,140
+                   L52,140
+                   L45,216
+                   C38,218 31,213 32,205
+                   L38,122
+                   C40,108 47,99 58,96
+                   L96,88
+                   L98,78
+                   C91,73 82,61 82,46
+                   C82,28 93,16 110,16 Z"
+              />
+
+              <!-- 1. BEYİN -->
+              <g id="svg-node-brain_cns" class="body-hotspot hotspot-normal" data-sys-id="brain_cns">
+                <ellipse cx="110" cy="34" rx="19" ry="13" />
+                <text x="110" y="38" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">BEYİN</text>
+              </g>
+
+              <!-- 2. GÖZ VE KAFA -->
+              <g id="svg-node-head_sans" class="body-hotspot hotspot-normal hotspot-active" data-sys-id="head_sans">
+                <rect x="88" y="50" width="44" height="16" rx="8" />
+                <text x="110" y="61" text-anchor="middle" fill="#fff" font-size="8.5" font-weight="bold">GÖZ/KAFA</text>
+              </g>
+
+              <!-- 3. KALP VE DAMAR -->
+              <g id="svg-node-cardiovascular" class="body-hotspot hotspot-normal" data-sys-id="cardiovascular">
+                <circle cx="116" cy="128" r="19" />
+                <text x="116" y="131" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">KALP</text>
+              </g>
+
+              <!-- 4. METABOLİZMA / KAN ŞEKERİ -->
+              <g id="svg-node-metabolic_endocrine" class="body-hotspot hotspot-normal" data-sys-id="metabolic_endocrine">
+                <ellipse cx="102" cy="174" rx="28" ry="14" />
+                <text x="102" y="177" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold">METABOLİZMA</text>
+              </g>
+
+              <!-- 5. BÖBREK VE BAĞIŞIKLIK -->
+              <g id="svg-node-renal_immune" class="body-hotspot hotspot-normal" data-sys-id="renal_immune">
+                <ellipse cx="86" cy="212" rx="14" ry="15" />
+                <ellipse cx="134" cy="212" rx="14" ry="15" />
+                <text x="110" y="215" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold">BÖBREK</text>
+              </g>
+
+              <!-- 6. KEMİK VE KAS -->
+              <g id="svg-node-musculoskeletal" class="body-hotspot hotspot-normal" data-sys-id="musculoskeletal">
+                <rect x="74" y="275" width="20" height="78" rx="9" />
+                <rect x="126" y="275" width="20" height="78" rx="9" />
+                <text x="110" y="318" text-anchor="middle" fill="#fff" font-size="8.5" font-weight="bold">KEMİK/KAS</text>
+              </g>
+            </svg>
+
+            <div class="body-system-buttons" id="body-system-buttons"></div>
+          </div>
+
+          <div class="body-system-detail" id="body-system-detail"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SEKME 4: KAYDEDİLEN GÜNLERİN GRAFİĞİ VE NASA OSDR VERİLERİ
+         ======================================================================= -->
+    <section id="tab-charts" class="tab-pane">
+      <div class="charts-tab-stack">
+        <div class="panel-card">
+          <div class="section-header" style="margin-bottom: 0;">
+            <div class="section-title-group">
+              <h2 id="chart-metric-title">Kan Basıncı - Kaydedilen Günlük Ölçümler ve Baz Çizgisi</h2>
+              <p>Her yeni gün girdiğiniz ölçüm bu grafiğe yeni bir gün noktası olarak eklenir ve kişisel baz çizginizle karşılaştırılır.</p>
+            </div>
+            <span class="status-pill status-normal" id="chart-recorded-days-pill">5 GÜN KAYITLI</span>
+          </div>
+
+          <div class="chart-tabs-bar">
+            <button class="chart-tab-btn active" data-metric="bp">Kan Basıncı (Tansiyon)</button>
+            <button class="chart-tab-btn" data-metric="heartRate">Nabız (Kalp Hızı)</button>
+            <button class="chart-tab-btn" data-metric="glucose">Kan Şekeri (Glikoz)</button>
+            <button class="chart-tab-btn" data-metric="temperature">Vücut Sıcaklığı</button>
+            <button class="chart-tab-btn" data-metric="sleepHours">Günlük Uyku Süresi</button>
+            <button class="chart-tab-btn" data-metric="moodScore">Ruh Hali (Mood)</button>
+          </div>
+
+          <div class="canvas-wrapper" style="height: 320px;">
+            <canvas id="telemetry-canvas"></canvas>
+          </div>
+
+          <div class="chart-legend-row">
+            <div class="legend-items">
+              <span class="legend-item"><span class="status-dot dot-green"></span> Yeşil Bölge: Normal Aralık</span>
+              <span class="legend-item"><span class="status-dot dot-yellow"></span> Sarı Bölge: Dikkat Sınırı</span>
+              <span class="legend-item"><span class="status-dot dot-red"></span> Kırmızı Bölge: Kritik Müdahale Sınırı</span>
+            </div>
+            <span>Kesikli Yeşil Çizgi: Astronotun Kişisel Baz Değeri (Normali)</span>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="section-header" style="margin-bottom: 0;">
+            <div class="section-title-group">
+              <h2>Gerçek NASA Açık Verileri: Inspiration4 Görevi Tahlil Sonuçları (OSDR)</h2>
+              <p>NASA Open Science Data Repository (osdr.nasa.gov) üzerinden alınan gerçek astronot kan ve idrar biyobelirteç referans verileri.</p>
+            </div>
+            <span class="status-pill status-normal">GERÇEK NASA OSDR VERİSİ</span>
+          </div>
+
+          <div class="anomaly-btn-row">
+            <button class="btn osdr-study-btn active" data-study="OSD_575">
+              OSD-575: Astronot Kan Tahlili Verileri (Şeker, Kalsiyum, Enflamasyon)
+            </button>
+            <button class="btn osdr-study-btn" data-study="OSD_656">
+              OSD-656: Astronot İdrar Tahlili Verileri (Böbrek ve Bağışıklık)
+            </button>
+          </div>
+
+          <div>
+            <h3 id="osdr-study-title" style="font-size: 1rem; font-weight: 700;">
+              OSD-575: Inspiration4 Görevi Astronot Kan Tahlili Verileri
+            </h3>
+            <p id="osdr-method-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;"></p>
+          </div>
+
+          <div class="anomaly-btn-row" id="osdr-marker-buttons"></div>
+
+          <div class="canvas-wrapper" style="height: 260px;">
+            <canvas id="osdr-canvas"></canvas>
+          </div>
+
+          <div class="osdr-insight-box">
+            <strong>Bu Grafik Ne Anlatıyor?</strong> <span id="osdr-marker-insight"></span>
+            <div style="margin-top: 6px;">
+              <a id="osdr-external-link" href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-575" target="_blank" rel="noopener" style="color: #85a6c4; font-weight: 600; font-size: 0.8rem;">
+                Resmi NASA OSDR Veri Sayfasını Aç (osdr.nasa.gov)
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SEKME 5: GÜNLÜK GÖREVLER, SU TAKİBİ VE SERİ (OYUNLAŞTIRMA)
+         ======================================================================= -->
+    <section id="tab-gamification" class="tab-pane">
+      <div class="panel-card">
+        <div class="section-header" style="margin-bottom: 0;">
+          <div class="section-title-group">
+            <h2>Günlük Sağlık Görevleri ve Seri (Oyunlaştırma)</h2>
+            <p>Her yeni gün öz-ölçümlerinizi kaydetmeyi, egzersizi ve su tüketimini teşvik eden puan ve seri sistemi.</p>
+          </div>
+          <span class="status-pill status-normal" id="crew-level-badge">Seviye 6 • Uzay Sağlık Koruyucusu</span>
+        </div>
+
+        <div class="gamification-stats-bar">
+          <div class="gami-stat-box">
+            <div class="gami-stat-val"><span id="streak-count-val">18 Gün</span></div>
+            <div class="gami-stat-lbl">Kesintisiz Ölçüm ve Sağlık Serisi (Streak)</div>
+          </div>
+          <div class="gami-stat-box">
+            <div class="gami-stat-val"><span id="xp-total-val">1420 Puan</span></div>
+            <div class="gami-stat-lbl">Toplam Sağlık Puanı (XP)</div>
+          </div>
+          <div class="gami-stat-box">
+            <div class="gami-stat-val" id="daily-completion-label">%50</div>
+            <div class="gami-stat-lbl">Bugünkü Görev Tamamlama</div>
+          </div>
+        </div>
+
+        <div class="xp-bar-container" title="Sonraki seviyeye ilerleme">
+          <div class="xp-bar-fill" id="xp-progress-fill" style="width: 68%;"></div>
+        </div>
+
+        <div class="hydration-widget">
+          <div>
+            <strong>Günlük Su Tüketimi (Böbrek Taşı Önleme Hedefi: 2.5 Litre):</strong>
+            <div id="water-tracker-val" style="color: #85a6c4; font-weight: 600; margin-top: 2px;">
+              1.50 / 2.50 Litre (6 / 10 Su Paketi)
+            </div>
+          </div>
+          <button class="btn btn-primary-sim" id="btn-add-water">+ 1 Paket (250 mL) Su İç (+10 Puan)</button>
+        </div>
+
+        <div class="mission-task-list" id="gamification-task-list"></div>
+
+        <div style="margin-top: 8px;">
+          <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
+            Kazanılan Astronot Sağlık Başarımları
+          </h4>
+          <div class="badges-grid" id="badges-container"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: REHBER KARTI DETAY MODALI -->
+  <div class="modal-backdrop" id="guide-modal">
+    <div class="modal-window">
+      <button class="modal-close-btn" aria-label="Kapat">✕</button>
+      <div id="guide-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- BİLDİRİM KUTUSU -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- SCRIPTLER -->
+  <script src="js/icons.js"></script>
+  <script src="js/nasa_data.js"></script>
+  <script src="js/decision_engine.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

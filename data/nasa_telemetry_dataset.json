@@ -1,0 +1,91 @@
+{
+  "dataset_metadata": {
+    "project_name": "ASTRA-MED: Otonom Derin Uzay Astronot Sağlık İzleme ve Karar Destek Sistemi",
+    "challenge": "NASA Space Apps Challenge 2026 - Create Health Monitoring Software for Astronauts on Space Missions",
+    "version": "2.6.0",
+    "data_provenance_disclosure": {
+      "nasa_research_sources": [
+        {
+          "id": "OSD-575",
+          "title": "Inspiration4 Blood Serum Comprehensive Metabolic Panel & Multiplex Cytokine Arrays",
+          "repository": "NASA Open Science Data Repository (osdr.nasa.gov)",
+          "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-575",
+          "usage_in_app": "Kan şekeri (glikoz), kalsiyum, elektrolit baz çizgileri ve uzay kaynaklı enflamasyon (IL-6, CRP) değişim oranları."
+        },
+        {
+          "id": "OSD-656",
+          "title": "Inspiration4 Urine Inflammation Panel (NULISAseq Multiplex Immunoassay)",
+          "repository": "NASA Open Science Data Repository (osdr.nasa.gov)",
+          "url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-656",
+          "usage_in_app": "Böbrek yorgunluk göstergeleri (KIM-1, IL-18, CXCL10), idrar kalsiyum atılımı (böbrek taşı riski) ve bağışıklık yanıtı."
+        },
+        {
+          "id": "NASA-HRP-SANS",
+          "title": "NASA Human Research Program - Spaceflight Associated Neuro-ocular Syndrome (SANS) & Cephalad Fluid Shift",
+          "repository": "NASA Human Research Roadmap (humanresearchroadmap.nasa.gov)",
+          "usage_in_app": "Yerçekimsiz ortamda ~2 litre sıvının baş bölgesine toplanması, kan basıncı ve göz arkası baskı uyarı kuralları."
+        },
+        {
+          "id": "NASA-HRP-THERMO",
+          "title": "NASA HRP Spaceflight Thermoregulation ('Space Fever') & Circadian Studies",
+          "repository": "NASA Technical Reports Server (NTRS)",
+          "usage_in_app": "Terin buharlaşamamasına bağlı vücut sıcaklığı artışı (+0.4°C - +1.0°C) ve uyku düzeni bozulması eşikleri."
+        }
+      ],
+      "synthetic_telemetry_notice": "Gerçek astronotların saatlik tansiyon ve nabız kayıtları tıbbi gizlilik nedeniyle açık paylaşılmamaktadır. Bu veri setindeki 180 günlük zaman serisi, NASA HRP sınırları ve OSD-575/OSD-656 verileri baz alınarak üretilmiş SENTETİK TELEMETRİ SİMÜLASYONUDUR."
+    }
+  },
+  "crew_profiles": [
+    {
+      "id": "cdr-kaya",
+      "name": "Elif Kaya",
+      "role": "Görev Komutanı",
+      "age": 38,
+      "mission": "Mars Derin Uzay Yolculuğu (180 Gün)",
+      "blood_type": "A Rh+",
+      "baselines": {
+        "bp_systolic": 116,
+        "bp_diastolic": 74,
+        "heart_rate": 62,
+        "glucose": 88,
+        "temperature": 36.6,
+        "sleep_hours": 7.5,
+        "mood_score": 8.5
+      }
+    },
+    {
+      "id": "plt-vance",
+      "name": "Marcus Vance",
+      "role": "Uzay Aracı Pilotu",
+      "age": 41,
+      "mission": "Mars Derin Uzay Yolculuğu (180 Gün)",
+      "blood_type": "O Rh+",
+      "baselines": {
+        "bp_systolic": 120,
+        "bp_diastolic": 77,
+        "heart_rate": 59,
+        "glucose": 91,
+        "temperature": 36.7,
+        "sleep_hours": 7.2,
+        "mood_score": 8.2
+      }
+    },
+    {
+      "id": "ms-sato",
+      "name": "Dr. Kenji Sato",
+      "role": "Biyobilim Uzmanı",
+      "age": 35,
+      "mission": "Mars Derin Uzay Yolculuğu (180 Gün)",
+      "blood_type": "B Rh+",
+      "baselines": {
+        "bp_systolic": 112,
+        "bp_diastolic": 71,
+        "heart_rate": 65,
+        "glucose": 85,
+        "temperature": 36.5,
+        "sleep_hours": 7.8,
+        "mood_score": 8.8
+      }
+    }
+  ]
+}
